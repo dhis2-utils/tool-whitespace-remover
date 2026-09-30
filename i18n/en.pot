@@ -1,0 +1,155 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"POT-Creation-Date: 2026-08-17T11:38:57.645Z\n"
+"PO-Revision-Date: 2026-08-17T11:38:57.650Z\n"
+
+msgid "Conflict check failed"
+msgstr "Conflict check failed"
+
+msgid "No conflicts found"
+msgstr "No conflicts found"
+
+msgid "Object fixed successfully"
+msgstr "Object fixed successfully"
+
+msgid "Scanning metadata for whitespace issues…"
+msgstr "Scanning metadata for whitespace issues…"
+
+msgid "Error loading metadata"
+msgstr "Error loading metadata"
+
+msgid "No whitespace issues found"
+msgstr "No whitespace issues found"
+
+msgid ""
+"No metadata with leading, trailing or double whitespace in names, codes or "
+"descriptions was found."
+msgstr ""
+"No metadata with leading, trailing or double whitespace in names, codes or "
+"descriptions was found."
+
+msgid "Conflict check summary"
+msgstr "Conflict check summary"
+
+msgid ""
+"{{ok}} object(s) did not have any conflicts, {{bad}} object(s) had one or "
+"more conflicts."
+msgstr ""
+"{{ok}} object(s) did not have any conflicts, {{bad}} object(s) had one or "
+"more conflicts."
+
+msgid ""
+"The check failed for {{failed}} object(s); these are not included in the "
+"counts above."
+msgstr ""
+"The check failed for {{failed}} object(s); these are not included in the "
+"counts above."
+
+msgid ""
+"Removing whitespace from the objects below would create duplicate names, "
+"short names or codes. These objects must be fixed manually."
+msgstr ""
+"Removing whitespace from the objects below would create duplicate names, "
+"short names or codes. These objects must be fixed manually."
+
+msgid "Object name"
+msgstr "Object name"
+
+msgid "Object ID"
+msgstr "Object ID"
+
+msgid "Conflicting property"
+msgstr "Conflicting property"
+
+msgid "Conflicting object ID"
+msgstr "Conflicting object ID"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Fix results"
+msgstr "Fix results"
+
+msgid "{{fixed}} object(s) fixed, {{failed}} object(s) failed."
+msgstr "{{fixed}} object(s) fixed, {{failed}} object(s) failed."
+
+msgid "Error message"
+msgstr "Error message"
+
+msgid "Checking…"
+msgstr "Checking…"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "Conflict"
+msgstr "Conflict"
+
+msgid "Fixing…"
+msgstr "Fixing…"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Short name"
+msgstr "Short name"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Check"
+msgstr "Check"
+
+msgid "Fix"
+msgstr "Fix"
+
+msgid "{{selected}} of {{total}} objects selected"
+msgstr "{{selected}} of {{total}} objects selected"
+
+msgid "Select all {{total}} across all pages"
+msgstr "Select all {{total}} across all pages"
+
+msgid "Clear selection"
+msgstr "Clear selection"
+
+msgid "Check selected ({{n}})"
+msgstr "Check selected ({{n}})"
+
+msgid "Check selected"
+msgstr "Check selected"
+
+msgid "Fix selected ({{n}})"
+msgstr "Fix selected ({{n}})"
+
+msgid "Fix selected"
+msgstr "Fix selected"
+
+msgctxt "Application title"
+msgid "__MANIFEST_APP_TITLE"
+msgstr "Whitespace Remover Tool"
+
+msgctxt "Application description"
+msgid "__MANIFEST_APP_DESCRIPTION"
+msgstr ""
+"Tool for identifying and removing leading, trailing and double whitespace "
+"in metadata"

@@ -1,9 +1,19 @@
+# DHIS2 Platform
+node_modules
+.pnpm-store
+.d2
+src/locales
+build
+
+# Legacy build artifacts
+compiled
+manifest.webapp
+
+# Local dev config / editor
+d2auth.json
 .history
 .tmp
-compiled
-build
-manifest.webapp
-node_modules
 .vscode
 bin
-d2auth.json
+.DS_Store
+__pycache__/

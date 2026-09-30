@@ -1,0 +1,20 @@
+.container {
+    padding-block-start: var(--spacers-dp8);
+}
+
+.pagination {
+    padding-block-start: var(--spacers-dp8);
+}
+
+.selectionBar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacers-dp8);
+    padding-block-start: var(--spacers-dp8);
+    color: var(--colors-grey700);
+    font-size: 14px;
+}
+
+.footer {
+    padding-block: var(--spacers-dp12);
+}
