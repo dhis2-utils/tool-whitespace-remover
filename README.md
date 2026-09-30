@@ -1,7 +1,9 @@
 # Whitespace Remover Tool
 
-Tool to remove trailing, leading and double white space in metadata (name, shortName, description, code properties).
-
+> ![Maturity: Validated](https://img.shields.io/badge/maturity-Validated-yellow)  
+> Intended use: tool to remove trailing, leading and double white space in metadata (name, shortName, description, code properties).
+> Maintainers: HISP Centre implementation team.
+> 
 > **WARNING**
 > This tool is intended to be used by system administrators to perform specific tasks, it is not intended for end users. It is available as a DHIS2 app, but has not been through the same rigorous testing as normal core apps. It should be used with care, and always tested in a development environment.
 
@@ -9,7 +11,7 @@ This app is built on the [DHIS2 App Platform](https://developers.dhis2.org/docs/
 
 ## License
 
-© Copyright University of Oslo 2024
+© Copyright University of Oslo 2026
 
 ## Getting started
 
