@@ -4,7 +4,7 @@ const config = {
     name: 'tool-whitespace-remover',
     title: 'Whitespace Remover Tool',
     description:
-        'Tool for identifying and removing leading, trailing and double whitespace in metadata',
+        'Finds and removes leading, trailing and double whitespace in metadata names, codes and descriptions',
     minDHIS2Version: '2.41',
 
     entryPoints: {

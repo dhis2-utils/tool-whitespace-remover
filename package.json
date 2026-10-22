@@ -1,12 +1,12 @@
 {
     "name": "tool-whitespace-remover",
-    "version": "1.0.0",
-    "description": "Tool for identifying and removing leading, trailing and double whitespace in metadata",
+    "version": "1.0.1",
+    "description": "Finds and removes leading, trailing and double whitespace in metadata names, codes and descriptions",
     "license": "BSD-3-Clause",
     "private": true,
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dhis2/tool-whitespace-remover.git"
+        "url": "git+https://github.com/dhis2-utils/tool-whitespace-remover.git"
     },
     "packageManager": "pnpm@10.13.1",
     "scripts": {

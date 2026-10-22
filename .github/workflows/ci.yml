@@ -6,6 +6,9 @@ on:
         branches:
             - main
 
+permissions:
+    contents: read
+
 jobs:
     verify:
         runs-on: ubuntu-latest
@@ -20,6 +23,8 @@ jobs:
                   cache: pnpm
 
             - name: Install dependencies
+              # --ignore-scripts: dependency lifecycle scripts are not needed to
+              # build this app and running them would execute third-party code in CI.
               run: pnpm install --frozen-lockfile --ignore-scripts
 
             - name: Lint
