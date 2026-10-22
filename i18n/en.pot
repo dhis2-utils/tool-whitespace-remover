@@ -5,14 +5,17 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-08-17T11:38:57.645Z\n"
-"PO-Revision-Date: 2026-08-17T11:38:57.650Z\n"
+"POT-Creation-Date: 2026-10-22T12:39:48.237Z\n"
+"PO-Revision-Date: 2026-10-22T12:39:48.237Z\n"
 
 msgid "Conflict check failed"
 msgstr "Conflict check failed"
 
 msgid "No conflicts found"
 msgstr "No conflicts found"
+
+msgid "Conflict check failed for {{failed}} object(s)"
+msgstr "Conflict check failed for {{failed}} object(s)"
 
 msgid "Object fixed successfully"
 msgstr "Object fixed successfully"

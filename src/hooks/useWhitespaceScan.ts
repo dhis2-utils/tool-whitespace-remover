@@ -2,9 +2,10 @@ import { useDataEngine } from '@dhis2/app-runtime'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { MetadataItem, MetadataMap } from '@/types/metadata'
+import { patchableTypes, Schema } from '@/utils/patchableTypes'
 import { hasWhitespaceIssue } from '@/utils/whitespace'
 
-const FIELDS = 'id,name,shortName,code,description'
+const FIELDS = 'id,name,shortName,code,description,optionSet[id]'
 
 // The API cannot filter on whitespace in shortName (token index limitation),
 // so shortName issues are only found on objects matched via other fields.
@@ -18,23 +19,6 @@ const buildFilters = (field: string): string[] => [
     `${field}:$ilike: `,
     `${field}:ilike$: `,
 ]
-
-type Schema = {
-    plural: string
-    metadata: boolean
-    persisted: boolean
-    relativeApiEndpoint?: string
-}
-
-// Only persisted metadata types with their own API endpoint can be patched
-// via /api/<type>/<id>; anything else (read-only/embedded types) would fail
-// at fix time, so keep it out of the scan results.
-const patchableTypes = (schemas: Schema[]): Set<string> =>
-    new Set(
-        schemas
-            .filter((s) => s.metadata && s.persisted && s.relativeApiEndpoint)
-            .map((s) => s.plural)
-    )
 
 const mergeResponses = (
     responses: Record<string, unknown>[],

@@ -199,8 +199,8 @@ export const CleanerPage = () => {
             if (errorCount > 0) {
                 showError({
                     message: i18n.t(
-                        'Conflict check failed for {{count}} object(s)',
-                        { count: errorCount }
+                        'Conflict check failed for {{failed}} object(s)',
+                        { failed: errorCount }
                     ),
                 })
             }

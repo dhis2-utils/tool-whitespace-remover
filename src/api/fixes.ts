@@ -10,6 +10,21 @@ export type FixResult = {
     errors: FixError[]
 }
 
+type ErrorReports = { response?: { errorReports?: Array<{ message: string }> } }
+
+/**
+ * The reason a fix failed. DHIS2 answers a rejected patch with a generic
+ * message; the actual reasons are in the import report's error reports.
+ */
+export const fixErrorMessage = (error: unknown): string => {
+    const details = (error as { details?: ErrorReports } | null)?.details
+    const reports = details?.response?.errorReports ?? []
+    if (reports.length > 0) {
+        return reports.map((report) => report.message).join('; ')
+    }
+    return error instanceof Error ? error.message : String(error)
+}
+
 /**
  * Removes the whitespace issues on a single object with a JSON-patch,
  * only touching the fields that actually need cleaning.
@@ -48,8 +63,7 @@ export const fixItems = async (
                 errors.push({
                     id: item.id,
                     name: item.name ?? item.id,
-                    message:
-                        error instanceof Error ? error.message : String(error),
+                    message: fixErrorMessage(error),
                 })
             }
         })

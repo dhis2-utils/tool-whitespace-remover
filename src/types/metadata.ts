@@ -9,6 +9,8 @@ export type CleanableField = (typeof CLEANABLE_FIELDS)[number]
 
 export type MetadataItem = {
     id: string
+    // only set on options; their names and codes are unique per option set
+    optionSet?: { id: string }
 } & Partial<Record<CleanableField, string>>
 
 /** Metadata type (e.g. "dataElements") -> objects with whitespace issues */
