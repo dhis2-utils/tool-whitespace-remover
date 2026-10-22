@@ -17,3 +17,4 @@ d2auth.json
 bin
 .DS_Store
 __pycache__/
+e2e/results/
