@@ -15,7 +15,7 @@ import {
 import React, { useState } from 'react'
 import styles from './MetadataTable.module.css'
 import { WhitespaceHighlight } from './WhitespaceHighlight'
-import { MetadataItem, RowStatus } from '@/types/metadata'
+import type { MetadataItem, RowStatus } from '@/types/metadata'
 
 const StatusTag = ({ status }: { status: RowStatus }) => {
     switch (status) {
@@ -36,7 +36,7 @@ const StatusTag = ({ status }: { status: RowStatus }) => {
 
 const DEFAULT_PAGE_SIZE = 50
 
-type Props = {
+interface Props {
     items: MetadataItem[]
     statuses: Record<string, RowStatus>
     selected: Set<string>

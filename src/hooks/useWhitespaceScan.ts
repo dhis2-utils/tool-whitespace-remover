@@ -1,8 +1,9 @@
 import { useDataEngine } from '@dhis2/app-runtime'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { MetadataItem, MetadataMap } from '@/types/metadata'
-import { patchableTypes, Schema } from '@/utils/patchableTypes'
+import type { MetadataItem, MetadataMap } from '@/types/metadata'
+import type { Schema } from '@/utils/patchableTypes'
+import { patchableTypes } from '@/utils/patchableTypes'
 import { hasWhitespaceIssue } from '@/utils/whitespace'
 
 const FIELDS = 'id,name,shortName,code,description,optionSet[id]'
@@ -30,7 +31,10 @@ const mergeResponses = (
             if (!allowedTypes.has(type) || !Array.isArray(value)) {
                 continue
             }
-            merged[type] = (merged[type] ?? []).concat(value as MetadataItem[])
+            merged[type] = [
+                ...(merged[type] ?? []),
+                ...(value as MetadataItem[]),
+            ]
         }
     }
     for (const type of Object.keys(merged)) {

@@ -1,7 +1,7 @@
-import { Conflict, MetadataItem } from '@/types/metadata'
+import type { Conflict, MetadataItem } from '@/types/metadata'
 import { cleanString } from '@/utils/whitespace'
 
-type DataEngine = {
+interface DataEngine {
     query: (query: Record<string, unknown>) => Promise<Record<string, unknown>>
 }
 
@@ -53,10 +53,12 @@ const cleanedValue = (
  * part instead; callers compare the candidates exactly.
  */
 export const conflictFilter = (field: string, value: string): string => {
-    const longest = value
-        .split(',')
-        .map((part) => part.trim())
-        .reduce((a, b) => (b.length > a.length ? b : a), '')
+    let longest = ''
+    for (const part of value.split(',')) {
+        if (part.trim().length > longest.length) {
+            longest = part.trim()
+        }
+    }
     // An empty filter value is a server error, so a value of only commas
     // keeps the eq filter
     return value.includes(',') && longest !== ''

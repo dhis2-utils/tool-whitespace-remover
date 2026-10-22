@@ -1,4 +1,4 @@
-export type Schema = {
+export interface Schema {
     plural: string
     metadata: boolean
     persisted: boolean

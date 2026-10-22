@@ -28,8 +28,9 @@ describe('conflictFilter', () => {
 })
 
 describe('findConflicts', () => {
-    type Query = {
+    interface Query {
         objects: { resource: string; params: { filter: string[] } }
+        [key: string]: unknown
     }
 
     // Answers every query with the same candidates, as the server would
@@ -38,10 +39,10 @@ describe('findConflicts', () => {
         const queries: Query['objects']['params'][] = []
         return {
             queries,
-            query: async (query: Record<string, unknown>) => {
+            query: (query: Record<string, unknown>) => {
                 const { resource, params } = (query as Query).objects
                 queries.push(params)
-                return { objects: { [resource]: objects } }
+                return Promise.resolve({ objects: { [resource]: objects } })
             },
         }
     }

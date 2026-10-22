@@ -1,8 +1,5 @@
-import {
-    CLEANABLE_FIELDS,
-    CleanableField,
-    MetadataItem,
-} from '@/types/metadata'
+import type { CleanableField, MetadataItem } from '@/types/metadata'
+import { CLEANABLE_FIELDS } from '@/types/metadata'
 
 /** True when the string has leading/trailing whitespace or repeated whitespace */
 export const needsCleaning = (value: unknown): value is string =>

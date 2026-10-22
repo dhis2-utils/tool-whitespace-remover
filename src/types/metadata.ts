@@ -24,14 +24,14 @@ export type RowStatus =
     | 'fixing'
     | 'error'
 
-export type Conflict = {
+export interface Conflict {
     objectId: string
     objectName: string
     property: string
     conflictingObjectId: string
 }
 
-export type FixError = {
+export interface FixError {
     id: string
     name: string
     message: string

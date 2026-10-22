@@ -1,16 +1,18 @@
-import { FixError, MetadataItem } from '@/types/metadata'
+import type { FixError, MetadataItem } from '@/types/metadata'
 import { cleanString, fieldsNeedingCleaning } from '@/utils/whitespace'
 
-type DataEngine = {
+interface DataEngine {
     mutate: (mutation: unknown) => Promise<unknown>
 }
 
-export type FixResult = {
+export interface FixResult {
     fixedIds: string[]
     errors: FixError[]
 }
 
-type ErrorReports = { response?: { errorReports?: Array<{ message: string }> } }
+interface ErrorReports {
+    response?: { errorReports?: Array<{ message: string }> }
+}
 
 /**
  * The reason a fix failed. DHIS2 answers a rejected patch with a generic

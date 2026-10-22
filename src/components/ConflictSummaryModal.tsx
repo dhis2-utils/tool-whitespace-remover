@@ -14,9 +14,9 @@ import {
     TableHead,
 } from '@dhis2/ui'
 import React from 'react'
-import { Conflict } from '@/types/metadata'
+import type { Conflict } from '@/types/metadata'
 
-type Props = {
+interface Props {
     conflicts: Conflict[]
     checkedCount: number
     errorCount: number
