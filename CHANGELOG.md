@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Visualizations, event visualizations and maps are no longer shown or fixed. In DHIS2 2.41 to 2.43, changing one of these objects through the API removes the data elements from its data element operands, and the object can no longer be opened.
+- Option codes are never changed. Data stores the option code, and program rules compare against it, so cleaning it would cut stored values off from their option. Options whose only issue is in the code are no longer shown.
 - User documentation moved to `docs/user/`, in the format used by docs.dhis2.org.
 - The end-to-end suite moved to `e2e/` and follows the `run.sh` contract of the tool conventions.
 
@@ -18,7 +19,7 @@ All notable changes to this project will be documented in this file.
 
 - Objects whose only whitespace issue is in the short name are now found. Before, their short name was only cleaned when the name, code or description also had an issue.
 - The conflict check now finds duplicates of values that contain a comma. On DHIS2 2.42 and later they were missed.
-- Options are checked for duplicate names and codes within their option set only, which is what DHIS2 requires. Before, an option with the same name in another option set was reported as a conflict.
+- Options are checked for duplicate names within their option set only, which is what DHIS2 requires. Before, an option with the same name in another option set was reported as a conflict.
 - When DHIS2 rejects a fix, the fix results show the reason instead of a generic message.
 - The alert for failed conflict checks is now translatable.
 

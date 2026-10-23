@@ -36,7 +36,7 @@ export const fixItem = async (
     type: string,
     item: MetadataItem
 ): Promise<void> => {
-    const operations = fieldsNeedingCleaning(item).map((field) => ({
+    const operations = fieldsNeedingCleaning(item, type).map((field) => ({
         op: 'add',
         path: `/${field}`,
         value: cleanString(item[field] as string),

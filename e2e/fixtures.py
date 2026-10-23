@@ -92,7 +92,8 @@ class Seed:
             "ou_twin": "organisationUnits", "oug": "organisationUnitGroups",
             "deg": "dataElementGroups", "ind": "indicators",
             "vis": "visualizations", "os1": "optionSets", "os2": "optionSets",
-            "opt1": "options", "opt2": "options",
+            "opt1": "options", "opt2": "options", "opt3": "options",
+            "opt4": "options",
         }
         objects = [[types.get(k, "dataElements"), v] for k, v in self.uid.items()]
         return objects + [["constants", uid] for uid in self.batch]
@@ -180,7 +181,7 @@ def _metadata(s, cc, root, itype):
         }],
         "optionSets": [
             {"id": s.id("os1"), "name": f"{p} options one", "valueType": "TEXT",
-             "options": [{"id": s.id("opt1")}]},
+             "options": [{"id": s.id(k)} for k in ("opt1", "opt3", "opt4")]},
             {"id": s.id("os2"), "name": f"{p} options two", "valueType": "TEXT",
              "options": [{"id": s.id("opt2")}]},
         ],
@@ -189,6 +190,11 @@ def _metadata(s, cc, root, itype):
              "optionSet": {"id": s.id("os1")}},
             {"id": s.id("opt2"), "name": f"{p} yes", "code": f"{c}_YES",
              "optionSet": {"id": s.id("os2")}},
+            # data stores option codes, so the tool must leave these as they are
+            {"id": s.id("opt3"), "name": f"{p} maybe ", "code": f" {c}_MAYBE ",
+             "optionSet": {"id": s.id("os1")}},
+            {"id": s.id("opt4"), "name": f"{p} no", "code": f"{c}_NO  ",
+             "optionSet": {"id": s.id("os1")}},
         ],
         "constants": [
             {"id": uid, "name": f"{p} batch {n:02d} ", "shortName": f"{p} b{n:02d}",

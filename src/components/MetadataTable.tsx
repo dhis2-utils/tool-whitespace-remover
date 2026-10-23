@@ -15,7 +15,7 @@ import {
 import React, { useState } from 'react'
 import styles from './MetadataTable.module.css'
 import { WhitespaceHighlight } from './WhitespaceHighlight'
-import type { MetadataItem, RowStatus } from '@/types/metadata'
+import type { CleanableField, MetadataItem, RowStatus } from '@/types/metadata'
 
 const StatusTag = ({ status }: { status: RowStatus }) => {
     switch (status) {
@@ -38,6 +38,8 @@ const DEFAULT_PAGE_SIZE = 50
 
 interface Props {
     items: MetadataItem[]
+    // the fields the tool may change for this type; others are not highlighted
+    cleanable: readonly CleanableField[]
     statuses: Record<string, RowStatus>
     selected: Set<string>
     busy: boolean
@@ -51,6 +53,7 @@ interface Props {
 
 export const MetadataTable = ({
     items,
+    cleanable,
     statuses,
     selected,
     busy,
@@ -143,19 +146,31 @@ export const MetadataTable = ({
                                 </DataTableCell>
                                 <DataTableCell>{item.id}</DataTableCell>
                                 <DataTableCell>
-                                    <WhitespaceHighlight value={item.name} />
+                                    <WhitespaceHighlight
+                                        value={item.name}
+                                        highlight={cleanable.includes('name')}
+                                    />
                                 </DataTableCell>
                                 <DataTableCell>
                                     <WhitespaceHighlight
                                         value={item.shortName}
+                                        highlight={cleanable.includes(
+                                            'shortName'
+                                        )}
                                     />
                                 </DataTableCell>
                                 <DataTableCell>
-                                    <WhitespaceHighlight value={item.code} />
+                                    <WhitespaceHighlight
+                                        value={item.code}
+                                        highlight={cleanable.includes('code')}
+                                    />
                                 </DataTableCell>
                                 <DataTableCell>
                                     <WhitespaceHighlight
                                         value={item.description}
+                                        highlight={cleanable.includes(
+                                            'description'
+                                        )}
                                     />
                                 </DataTableCell>
                                 <DataTableCell>

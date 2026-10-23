@@ -12,15 +12,16 @@ const PROPERTY_LABELS: Record<string, string> = {
 }
 
 // Names and short names must be unique per type, except for organisation
-// units. Codes must always be unique. Options have no short name, and their
-// name and code only need to be unique within their option set.
+// units. Codes must always be unique. Options have no short name, their
+// name only needs to be unique within their option set, and their code is
+// never changed (see cleanableFields).
 const uniqueFieldsForType = (
     type: string
 ): Array<'name' | 'shortName' | 'code'> => {
     if (type === 'organisationUnits') {
         return ['code']
     }
-    return type === 'options' ? ['name', 'code'] : ['name', 'shortName', 'code']
+    return type === 'options' ? ['name'] : ['name', 'shortName', 'code']
 }
 
 // Options are only compared with options in the same option set

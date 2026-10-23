@@ -59,7 +59,7 @@ The tool checks the values that DHIS2 requires to be unique:
 
 - For most types: name, short name and code.
 - For organisation units: code only. Two organisation units can have the same name.
-- For options: name and code, within the same option set.
+- For options: name only, within the same option set.
 
 To check one object, click **Check** in its row. The status changes to **Ready** or **Conflict**. If there is a conflict, the **Conflict check summary** opens.
 
@@ -84,7 +84,7 @@ The status of each object is one of these:
 
 ## Fix whitespace issues { #tool-whitespace-remover-fix }
 
-The tool removes extra whitespace from the name, short name, code and description of an object. It does not change any other property. You can only fix an object with the status **Ready**.
+The tool removes extra whitespace from the name, short name, code and description of an object. It does not change any other property, and it never changes the code of an option. You can only fix an object with the status **Ready**.
 
 > **Warning**
 >
@@ -103,6 +103,7 @@ If DHIS2 rejects a fix, the **Fix results** list the object with the reason, and
 ## Known limitations { #tool-whitespace-remover-limitations }
 
 - The tool only cleans the name, short name, code and description. It does not clean translations, form names, attribute values or other text.
+- The tool does not change option codes, and it does not show an option whose only issue is in its code. Tracker and aggregate data store the option code, and program rules and expressions compare against it, so a changed code would no longer match the stored values. To clean an option code, change the stored values at the same time.
 - The tool does not show visualizations, event visualizations or maps. In DHIS2 2.41 to 2.43, a change to one of these objects through the API can remove the data elements from its data items. Rename them in the **Data Visualizer**, **Line Listing** or **Maps** app instead.
 - When you fix a data set, an option set or a program, DHIS2 increases its version. The Android Capture app then downloads it again at the next synchronization.
 - DHIS2 can reject a change to some objects for a reason that is not about whitespace, for example a program with data that does not pass validation on 2.41. The **Fix results** show the reason.

@@ -9,9 +9,21 @@ export const needsCleaning = (value: unknown): value is string =>
 export const cleanString = (value: string): string =>
     value.replace(/\s\s+/g, ' ').trim()
 
-/** The subset of fields on an item that need cleaning */
-export const fieldsNeedingCleaning = (item: MetadataItem): CleanableField[] =>
-    CLEANABLE_FIELDS.filter((field) => needsCleaning(item[field]))
+// An option's code is the value that tracker and aggregate data store, and
+// program rules and expressions compare against it. Changing it would cut
+// stored values off from their option, so it is never cleaned.
+const OPTION_FIELDS = CLEANABLE_FIELDS.filter((field) => field !== 'code')
 
-export const hasWhitespaceIssue = (item: MetadataItem): boolean =>
-    fieldsNeedingCleaning(item).length > 0
+/** The fields the tool may clean on objects of a metadata type */
+export const cleanableFields = (type: string): readonly CleanableField[] =>
+    type === 'options' ? OPTION_FIELDS : CLEANABLE_FIELDS
+
+/** The subset of fields on an item that need cleaning */
+export const fieldsNeedingCleaning = (
+    item: MetadataItem,
+    type: string
+): CleanableField[] =>
+    cleanableFields(type).filter((field) => needsCleaning(item[field]))
+
+export const hasWhitespaceIssue = (item: MetadataItem, type: string): boolean =>
+    fieldsNeedingCleaning(item, type).length > 0

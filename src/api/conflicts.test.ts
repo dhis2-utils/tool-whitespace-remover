@@ -69,17 +69,14 @@ describe('findConflicts', () => {
         ])
     })
 
-    it('scopes option checks to the option set and skips short names', async () => {
+    it('checks only the name of an option, within its option set', async () => {
         const engine = engineReturning([])
         await findConflicts({
             engine,
             type: 'options',
             item: option('opt00000001', 'Yes ', 'set00000001'),
         })
-        expect(engine.queries.map((q) => q.filter[0])).toEqual([
-            'name:eq:Yes',
-            'code:eq:opt00000001_CODE',
-        ])
+        expect(engine.queries.map((q) => q.filter[0])).toEqual(['name:eq:Yes'])
         for (const params of engine.queries) {
             expect(params.filter).toContain('optionSet.id:eq:set00000001')
         }

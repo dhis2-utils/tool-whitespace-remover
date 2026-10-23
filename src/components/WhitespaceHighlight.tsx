@@ -10,11 +10,21 @@ const isProblemRun = (value: string, index: number, run: string): boolean =>
 
 /**
  * Renders a metadata value in quotes, with the problematic whitespace
- * (leading, trailing, repeated) highlighted.
+ * (leading, trailing, repeated) highlighted. With `highlight` off, for a
+ * value the tool does not change, the value is shown as it is.
  */
-export const WhitespaceHighlight = ({ value }: { value?: string }) => {
+export const WhitespaceHighlight = ({
+    value,
+    highlight = true,
+}: {
+    value?: string
+    highlight?: boolean
+}) => {
     if (value === undefined || value === '') {
         return null
+    }
+    if (!highlight) {
+        return <span className={styles.value}>&quot;{value}&quot;</span>
     }
     const segments: ReactNode[] = []
     let last = 0

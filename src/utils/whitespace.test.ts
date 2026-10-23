@@ -1,9 +1,12 @@
 import {
+    cleanableFields,
     cleanString,
     fieldsNeedingCleaning,
     hasWhitespaceIssue,
     needsCleaning,
 } from './whitespace'
+
+const DE = 'dataElements'
 
 describe('needsCleaning', () => {
     it.each([
@@ -72,38 +75,74 @@ describe('cleanString', () => {
 describe('fieldsNeedingCleaning', () => {
     it('returns exactly the cleanable fields with issues', () => {
         expect(
-            fieldsNeedingCleaning({
-                id: 'abc12345678',
-                name: ' bad',
-                shortName: 'ok',
-                code: 'bad  code',
-                description: undefined,
-            })
+            fieldsNeedingCleaning(
+                {
+                    id: 'abc12345678',
+                    name: ' bad',
+                    shortName: 'ok',
+                    code: 'bad  code',
+                    description: undefined,
+                },
+                DE
+            )
         ).toEqual(['name', 'code'])
+    })
+
+    it('never cleans the code of an option, which data stores', () => {
+        expect(
+            fieldsNeedingCleaning(
+                { id: 'abc12345678', name: ' bad', code: 'bad  code' },
+                'options'
+            )
+        ).toEqual(['name'])
     })
 
     it('returns an empty list for a clean item', () => {
         expect(
-            fieldsNeedingCleaning({ id: 'abc12345678', name: 'ok' })
+            fieldsNeedingCleaning({ id: 'abc12345678', name: 'ok' }, DE)
         ).toEqual([])
     })
 
     it('ignores whitespace in non-cleanable properties', () => {
         const item = { id: 'abc12345678', name: 'ok', other: ' bad ' }
-        expect(fieldsNeedingCleaning(item)).toEqual([])
+        expect(fieldsNeedingCleaning(item, DE)).toEqual([])
+    })
+})
+
+describe('cleanableFields', () => {
+    it('cleans all four fields for most types', () => {
+        expect(cleanableFields(DE)).toEqual([
+            'name',
+            'shortName',
+            'code',
+            'description',
+        ])
+    })
+
+    it('leaves out the code for options', () => {
+        expect(cleanableFields('options')).not.toContain('code')
     })
 })
 
 describe('hasWhitespaceIssue', () => {
+    it('ignores an option whose only issue is in its code', () => {
+        expect(
+            hasWhitespaceIssue(
+                { id: 'abc12345678', name: 'ok', code: 'x ' },
+                'options'
+            )
+        ).toBe(false)
+    })
+
     it('is true when any cleanable field has an issue', () => {
-        expect(hasWhitespaceIssue({ id: 'abc12345678', shortName: 'x ' })).toBe(
-            true
-        )
+        expect(
+            hasWhitespaceIssue({ id: 'abc12345678', shortName: 'x ' }, DE)
+        ).toBe(true)
     })
 
     it('is false when all cleanable fields are clean or absent', () => {
-        expect(hasWhitespaceIssue({ id: 'abc12345678' })).toBe(false)
-        expect(hasWhitespaceIssue({ id: 'abc12345678', name: 'a b' })).toBe(
+        expect(hasWhitespaceIssue({ id: 'abc12345678' }, DE)).toBe(false)
+        expect(hasWhitespaceIssue({ id: 'abc12345678', name: 'a b' }, DE)).toBe(
             false
         )
     })

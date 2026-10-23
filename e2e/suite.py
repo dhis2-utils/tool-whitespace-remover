@@ -333,6 +333,19 @@ def test_options_scope(run):
                status == READY and name == f"{run.seed.prefix} yes", f"status={status!r} name={name!r}")
 
 
+def test_option_codes_untouched(run):
+    s = run.seed
+    open_tab(run, "Options")
+    code_only_listed = row(run, s.id("opt4")).count() > 0
+    check_and_fix(run, "Options", s.id("opt3"))
+    name = server_value(run, "options", s.id("opt3"), "name")
+    codes = [server_value(run, "options", s.id(k), "code") for k in ("opt3", "opt4")]
+    expected = [f" {s.code}_MAYBE ", f"{s.code}_NO  "]
+    run.record("option-codes-never-changed",
+               not code_only_listed and name == f"{s.prefix} maybe" and codes == expected,
+               f"code-only listed={code_only_listed} name={name!r} codes={codes!r}")
+
+
 def test_bulk_peers(run):
     s = run.seed
     open_tab(run, DATA_ELEMENTS)
@@ -406,7 +419,8 @@ def test_bulk_fix(run):
 TESTS = [
     test_scan, test_highlight, test_xss, test_analytical_objects,
     test_fix_data_element, test_fix_org_unit, test_fix_indicator,
-    test_conflicts, test_options_scope, test_bulk_peers,
+    test_conflicts, test_options_scope, test_option_codes_untouched,
+    test_bulk_peers,
     test_failed_fix_reason, test_description_only, test_short_name_only,
     test_blank_codes,
     test_bulk_fix,
