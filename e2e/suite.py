@@ -47,6 +47,7 @@ DATA_ELEMENTS = "Data elements"
 READY = "Ready"
 CONFLICT = "Conflict"
 CHECK_RESULT = re.compile("^(Ready|Conflict|Error)$")
+FIX_MANUALLY = "Fix manually"
 TIMEOUT_MS = 120_000
 
 
@@ -61,6 +62,7 @@ class Run:
         self.seed = None
         self.page = None
         self.root = None
+        self.option_order = None
 
     def record(self, test_id, ok, message=""):
         status = "pass" if ok else "fail"
@@ -238,6 +240,9 @@ def server_value(run, obj_type, uid, field):
 def test_scan(run):
     labels = tab_labels(run)
     run.record("scan-completes", DATA_ELEMENTS in labels, "; ".join(labels))
+    # DHIS2 generates these names from the category options
+    run.record("category-option-combos-not-offered",
+               "Category option combos" not in labels, "; ".join(labels))
 
 
 def test_highlight(run):
@@ -321,7 +326,14 @@ def test_conflicts(run):
     _expect_conflict(run, "conflict-detected-with-comma", s.id("comma"), s.id("comma_target"))
 
 
+def option_order(run):
+    """The options of the first seeded option set, in order, with sortOrder."""
+    path = f"/api/optionSets/{run.seed.id('os1')}?fields=options[id,sortOrder]"
+    return run.api.get(path)[1].get("options")
+
+
 def test_options_scope(run):
+    run.option_order = option_order(run)
     uid = run.seed.id("opt1")
     target = check_one(run, "Options", uid)
     status = tag_of(target)
@@ -333,17 +345,47 @@ def test_options_scope(run):
                status == READY and name == f"{run.seed.prefix} yes", f"status={status!r} name={name!r}")
 
 
+def read_only(locator):
+    """Listed, but with nothing the tool may fix: no Check, a Fix manually tag."""
+    return (locator.count() == 1 and locator.locator(CHECK).count() == 0
+            and tag_of(locator) == FIX_MANUALLY)
+
+
 def test_option_codes_untouched(run):
     s = run.seed
     open_tab(run, "Options")
-    code_only_listed = row(run, s.id("opt4")).count() > 0
+    code_only = read_only(row(run, s.id("opt4")))
     check_and_fix(run, "Options", s.id("opt3"))
     name = server_value(run, "options", s.id("opt3"), "name")
     codes = [server_value(run, "options", s.id(k), "code") for k in ("opt3", "opt4")]
     expected = [f" {s.code}_MAYBE ", f"{s.code}_NO  "]
     run.record("option-codes-never-changed",
-               not code_only_listed and name == f"{s.prefix} maybe" and codes == expected,
-               f"code-only listed={code_only_listed} name={name!r} codes={codes!r}")
+               code_only and name == f"{s.prefix} maybe" and codes == expected,
+               f"code-only shown read-only={code_only} name={name!r} codes={codes!r}")
+    # opt1 (first) and opt3 (middle) were renamed; the set must keep its order
+    after = option_order(run)
+    run.record("option-set-order-kept", after == run.option_order and len(after) == 3,
+               f"before={run.option_order} after={after}")
+
+
+def rule_condition_valid(run):
+    s = run.seed
+    _, rule = run.api.get(f"/api/programRules/{s.id('rule')}?fields=condition")
+    _, result = run.api.request(
+        "POST", f"/api/programRules/condition/description?programId={s.id('prog')}",
+        rule["condition"].encode(), "text/plain")
+    return (result or {}).get("status") == "OK"
+
+
+def test_rule_variable_names_untouched(run):
+    s = run.seed
+    listed = open_tab(run, "Program rule variables")
+    shown = listed and read_only(row(run, s.id("prv")))
+    name = server_value(run, "programRuleVariables", s.id("prv"), "name")
+    valid = rule_condition_valid(run)
+    run.record("rule-variable-names-never-changed",
+               shown and name == f"{s.variable} " and valid,
+               f"shown read-only={shown} name={name!r} rule valid={valid}")
 
 
 def test_bulk_peers(run):
@@ -420,6 +462,7 @@ TESTS = [
     test_scan, test_highlight, test_xss, test_analytical_objects,
     test_fix_data_element, test_fix_org_unit, test_fix_indicator,
     test_conflicts, test_options_scope, test_option_codes_untouched,
+    test_rule_variable_names_untouched,
     test_bulk_peers,
     test_failed_fix_reason, test_description_only, test_short_name_only,
     test_blank_codes,

@@ -16,6 +16,10 @@ OK_DELETE = (200, 204, 404)
 # Deleted in this order: things that reference others go first
 DELETE_ORDER = [
     "visualizations",
+    "programRules",
+    "programRuleVariables",
+    "programStages",
+    "programs",
     "indicators",
     "dataElementGroups",
     "organisationUnitGroups",
@@ -80,6 +84,7 @@ class Seed:
     def __init__(self, run):
         self.prefix = f"E2E WSR {run}"
         self.code = f"E2EWSR{run[-6:]}"
+        self.variable = f"e2e_wsr_{run[-6:]}"
         self.uid = {}
         self.batch = [new_uid() for _ in range(BATCH_SIZE)]
 
@@ -93,7 +98,8 @@ class Seed:
             "deg": "dataElementGroups", "ind": "indicators",
             "vis": "visualizations", "os1": "optionSets", "os2": "optionSets",
             "opt1": "options", "opt2": "options", "opt3": "options",
-            "opt4": "options",
+            "opt4": "options", "prog": "programs", "stage": "programStages",
+            "prv": "programRuleVariables", "rule": "programRules",
         }
         objects = [[types.get(k, "dataElements"), v] for k, v in self.uid.items()]
         return objects + [["constants", uid] for uid in self.batch]
@@ -196,6 +202,23 @@ def _metadata(s, cc, root, itype):
             {"id": s.id("opt4"), "name": f"{p} no", "code": f"{c}_NO  ",
              "optionSet": {"id": s.id("os1")}},
         ],
+        # program rules refer to a variable by its exact name, so the tool
+        # must leave this name alone
+        "programs": [{
+            "id": s.id("prog"), "name": f"{p} program", "shortName": f"{p} program",
+            "programType": "WITHOUT_REGISTRATION", "categoryCombo": {"id": cc},
+            "programStages": [{"id": s.id("stage")}],
+        }],
+        "programStages": [{"id": s.id("stage"), "name": f"{p} stage",
+                           "program": {"id": s.id("prog")}}],
+        "programRuleVariables": [{
+            "id": s.id("prv"), "name": f"{s.variable} ", "program": {"id": s.id("prog")},
+            "programRuleVariableSourceType": "CALCULATED_VALUE", "valueType": "NUMBER",
+        }],
+        "programRules": [{
+            "id": s.id("rule"), "name": f"{p} rule", "program": {"id": s.id("prog")},
+            "condition": f"#{{{s.variable} }} > 1",
+        }],
         "constants": [
             {"id": uid, "name": f"{p} batch {n:02d} ", "shortName": f"{p} b{n:02d}",
              "value": 1}

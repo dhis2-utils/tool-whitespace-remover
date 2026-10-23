@@ -6,15 +6,17 @@ export interface Schema {
     properties?: { name: string; persisted: boolean }[]
 }
 
-// A JSON patch to an analytical object, even of an unrelated field, nulls
-// the data element of every data element operand it uses, and the object
-// can no longer be opened (DHIS2 core, seen on 2.41-2.43). Never patch them.
 const UNSAFE_TYPES = new Set([
+    // A JSON patch to an analytical object, even of an unrelated field,
+    // nulls the data element of every data element operand it uses, and the
+    // object can no longer be opened (DHIS2 core, seen on 2.41-2.43).
     'visualizations',
     'eventVisualizations',
     'maps',
     'eventReports',
     'eventCharts',
+    // DHIS2 generates their names from the category options.
+    'categoryOptionCombos',
 ])
 
 // Only persisted metadata types with their own API endpoint can be patched

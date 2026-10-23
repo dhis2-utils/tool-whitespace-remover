@@ -35,6 +35,14 @@ describe('patchableTypes', () => {
     ])('never offers %s, which JSON patch corrupts', (plural) => {
         expect(patchableTypes([schema(plural)]).has(plural)).toBe(false)
     })
+
+    it('never offers category option combos, whose names DHIS2 generates', () => {
+        expect(
+            patchableTypes([schema('categoryOptionCombos')]).has(
+                'categoryOptionCombos'
+            )
+        ).toBe(false)
+    })
 })
 
 describe('shortNameTypes', () => {

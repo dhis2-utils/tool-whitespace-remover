@@ -40,7 +40,7 @@ const mergeResponses = (
         const seen = new Set<string>()
         merged[type] = merged[type]
             .filter((item) => {
-                if (seen.has(item.id) || !hasWhitespaceIssue(item, type)) {
+                if (seen.has(item.id) || !hasWhitespaceIssue(item)) {
                     return false
                 }
                 seen.add(item.id)

@@ -17,7 +17,6 @@ import type {
     RowStatus,
 } from '@/types/metadata'
 import { chunk } from '@/utils/chunk'
-import { cleanableFields } from '@/utils/whitespace'
 
 const BATCH_SIZE = 20
 
@@ -318,7 +317,7 @@ export const CleanerPage = () => {
                 <MetadataTable
                     key={activeType}
                     items={activeItems}
-                    cleanable={cleanableFields(activeType)}
+                    type={activeType}
                     statuses={statuses}
                     selected={selected}
                     busy={busy}

@@ -1,5 +1,7 @@
 import {
     cleanableFields,
+    isFixable,
+    protectedFields,
     cleanString,
     fieldsNeedingCleaning,
     hasWhitespaceIssue,
@@ -124,25 +126,53 @@ describe('cleanableFields', () => {
     })
 })
 
-describe('hasWhitespaceIssue', () => {
-    it('ignores an option whose only issue is in its code', () => {
+describe('protectedFields', () => {
+    it('protects option codes and program rule variable names', () => {
+        expect(protectedFields('options')).toEqual(['code'])
+        expect(protectedFields('programRuleVariables')).toEqual(['name'])
+        expect(protectedFields(DE)).toEqual([])
+    })
+
+    it('never lets the tool clean a protected field', () => {
+        expect(cleanableFields('programRuleVariables')).not.toContain('name')
+    })
+})
+
+describe('isFixable', () => {
+    const codeOnly = { id: 'abc12345678', name: 'ok', code: 'x ' }
+
+    it('is false when the only issues are in protected fields', () => {
+        expect(isFixable(codeOnly, 'options')).toBe(false)
         expect(
-            hasWhitespaceIssue(
-                { id: 'abc12345678', name: 'ok', code: 'x ' },
-                'options'
+            isFixable(
+                { id: 'abc12345678', name: 'var ' },
+                'programRuleVariables'
             )
         ).toBe(false)
     })
 
-    it('is true when any cleanable field has an issue', () => {
+    it('is true when a field the tool may clean has an issue', () => {
+        expect(isFixable({ ...codeOnly, name: 'yes ' }, 'options')).toBe(true)
+        expect(isFixable(codeOnly, DE)).toBe(true)
+    })
+})
+
+describe('hasWhitespaceIssue', () => {
+    it('lists an object whose only issue is in a protected field', () => {
         expect(
-            hasWhitespaceIssue({ id: 'abc12345678', shortName: 'x ' }, DE)
+            hasWhitespaceIssue({ id: 'abc12345678', name: 'ok', code: 'x ' })
         ).toBe(true)
     })
 
+    it('is true when any cleanable field has an issue', () => {
+        expect(hasWhitespaceIssue({ id: 'abc12345678', shortName: 'x ' })).toBe(
+            true
+        )
+    })
+
     it('is false when all cleanable fields are clean or absent', () => {
-        expect(hasWhitespaceIssue({ id: 'abc12345678' }, DE)).toBe(false)
-        expect(hasWhitespaceIssue({ id: 'abc12345678', name: 'a b' }, DE)).toBe(
+        expect(hasWhitespaceIssue({ id: 'abc12345678' })).toBe(false)
+        expect(hasWhitespaceIssue({ id: 'abc12345678', name: 'a b' })).toBe(
             false
         )
     })

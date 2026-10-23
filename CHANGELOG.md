@@ -11,7 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Visualizations, event visualizations and maps are no longer shown or fixed. In DHIS2 2.41 to 2.43, changing one of these objects through the API removes the data elements from its data element operands, and the object can no longer be opened.
-- Option codes are never changed. Data stores the option code, and program rules compare against it, so cleaning it would cut stored values off from their option. Options whose only issue is in the code are no longer shown.
+- Option codes and program rule variable names are never changed. Data stores the option code and program rules compare against it, and program rules refer to a variable by its exact name, so cleaning either would break data or rules. The tool shows their whitespace in red, with a notice that explains why; an object with only such issues is marked **Fix manually** and cannot be fixed in the tool.
+- Category option combinations are no longer shown: DHIS2 generates their names from the category options.
 - User documentation moved to `docs/user/`, in the format used by docs.dhis2.org.
 - The end-to-end suite moved to `e2e/` and follows the `run.sh` contract of the tool conventions.
 

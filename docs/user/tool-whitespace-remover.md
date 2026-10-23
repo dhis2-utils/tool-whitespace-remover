@@ -21,6 +21,25 @@ The tool only finds the metadata that you have access to. To scan all metadata, 
 >
 > The tool changes metadata, and it can change many objects at the same time. You cannot undo a change in the tool. Try the tool on a copy of your database first, and make a backup of your production database before you use it there.
 
+### Check where names and codes are used { #tool-whitespace-remover-names-and-codes }
+
+Most of DHIS2 refers to metadata by its ID, which the tool never changes. Some features and other systems find metadata by its name or code instead. When the tool removes whitespace from a name or code, anything that looks for the old value no longer finds the object.
+
+> **Warning**
+>
+> Before you fix an object, check whether its name or code is used to match data or metadata. If it is, a fix can stop data from being imported or exchanged, without an error that points to the tool.
+
+Look in particular at:
+
+- Data exchanges and integrations that match metadata by code or name instead of ID. This includes aggregate data exchanges inside the same DHIS2 instance, imports from other systems, and scripts or interoperability tools that send data to DHIS2.
+- ADX data imports. ADX identifies data sets, data elements, categories, category options and organisation units by code.
+- Imports that use the **Code** or **Name** ID scheme, for example in the **Import/Export** app.
+- Program rules that compare values with an option name. This happens when a program rule variable is set to use option names instead of option codes.
+- SQL views, reports, spreadsheets and apps outside DHIS2 that look up metadata by name or code.
+- Mappings in other systems, for example the codes that a national reporting system or a donor system uses to receive data from DHIS2.
+
+If you find such a use, fix the object only when you can change the other side at the same time. Otherwise leave the whitespace in place.
+
 ## Install the tool { #tool-whitespace-remover-install }
 
 You install the tool from a zip file, which you can download from GitHub or from the **DHIS2 Admin Toolbox** app. The tool is not on the App Hub.
@@ -45,7 +64,12 @@ When you open the tool, it scans your metadata for whitespace issues in names, s
 1. Open the **Whitespace Remover Tool** app. A progress bar shows while the tool scans the metadata.
 2. Choose the tab for a type of metadata. Each tab shows the number of objects of that type with whitespace issues.
 
-The table shows each value in quotation marks, with the extra whitespace highlighted in yellow. The table shows 50 objects per page. To change this, choose a number in **Items per page** under the table.
+The table shows each value in quotation marks, with the extra whitespace highlighted:
+
+- Yellow: whitespace that the tool can remove.
+- Red: whitespace in a value that the tool never changes, because other data refers to that exact value. The tool shows a notice above the table that says why. An object with only red highlights has no **Check** or **Fix** button, and its status is **Fix manually**.
+
+The table shows 50 objects per page. To change this, choose a number in **Items per page** under the table.
 
 ![The Data elements tab, with the extra whitespace in each value highlighted in yellow](resources/images/tool-whitespace-remover/scan-results.png)
 
@@ -84,7 +108,14 @@ The status of each object is one of these:
 
 ## Fix whitespace issues { #tool-whitespace-remover-fix }
 
-The tool removes extra whitespace from the name, short name, code and description of an object. It does not change any other property, and it never changes the code of an option. You can only fix an object with the status **Ready**.
+The tool removes extra whitespace from the name, short name, code and description of an object. It does not change any other property. You can only fix an object with the status **Ready**.
+
+The tool never changes these values, and shows their whitespace in red:
+
+- The code of an option. Tracker and aggregate data store the option code, not the option name, and program rules and expressions compare values against the code. A changed code would no longer match the values that are already stored, so the data would lose its option. The tool does fix the option name.
+- The name of a program rule variable. Program rules refer to a variable by its exact name, for example `#{weight}`. A changed name would make every program rule that uses the variable invalid.
+
+To clean one of these values, change it by hand in the **Maintenance** app, together with the data or the program rules that use it.
 
 > **Warning**
 >
@@ -103,7 +134,8 @@ If DHIS2 rejects a fix, the **Fix results** list the object with the reason, and
 ## Known limitations { #tool-whitespace-remover-limitations }
 
 - The tool only cleans the name, short name, code and description. It does not clean translations, form names, attribute values or other text.
-- The tool does not change option codes, and it does not show an option whose only issue is in its code. Tracker and aggregate data store the option code, and program rules and expressions compare against it, so a changed code would no longer match the stored values. To clean an option code, change the stored values at the same time.
+- The tool does not change option codes or program rule variable names. It shows their whitespace in red. The section on fixing whitespace issues explains why.
+- The tool does not show category option combinations. DHIS2 generates their names from the names of the category options.
 - The tool does not show visualizations, event visualizations or maps. In DHIS2 2.41 to 2.43, a change to one of these objects through the API can remove the data elements from its data items. Rename them in the **Data Visualizer**, **Line Listing** or **Maps** app instead.
 - When you fix a data set, an option set or a program, DHIS2 increases its version. The Android Capture app then downloads it again at the next synchronization.
 - DHIS2 can reject a change to some objects for a reason that is not about whitespace, for example a program with data that does not pass validation on 2.41. The **Fix results** show the reason.
