@@ -1,4 +1,4 @@
-import { patchableTypes } from './patchableTypes'
+import { patchableTypes, shortNameTypes } from './patchableTypes'
 
 const schema = (plural: string, overrides = {}) => ({
     plural,
@@ -34,5 +34,34 @@ describe('patchableTypes', () => {
         'eventCharts',
     ])('never offers %s, which JSON patch corrupts', (plural) => {
         expect(patchableTypes([schema(plural)]).has(plural)).toBe(false)
+    })
+})
+
+describe('shortNameTypes', () => {
+    const withShortName = (plural: string, persisted = true) =>
+        schema(plural, { properties: [{ name: 'shortName', persisted }] })
+
+    it('keeps the patchable types that store a short name', () => {
+        expect(
+            shortNameTypes([
+                withShortName('dataElements'),
+                schema('constants', {
+                    properties: [{ name: 'name', persisted: true }],
+                }),
+                withShortName('derived', false),
+            ])
+        ).toEqual(['dataElements'])
+    })
+
+    it('never includes types that are not patchable', () => {
+        expect(
+            shortNameTypes([
+                withShortName('visualizations'),
+                {
+                    ...withShortName('readOnly'),
+                    relativeApiEndpoint: undefined,
+                },
+            ])
+        ).toEqual([])
     })
 })

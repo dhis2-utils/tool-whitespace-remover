@@ -40,7 +40,7 @@ The tool shows in the app menu as **Whitespace Remover Tool**. The **DHIS2 Admin
 
 ## Find whitespace issues { #tool-whitespace-remover-find }
 
-When you open the tool, it scans your metadata for whitespace issues in names, codes and descriptions. On a large database the scan can take a few minutes.
+When you open the tool, it scans your metadata for whitespace issues in names, short names, codes and descriptions. On a large database the scan can take a few minutes.
 
 1. Open the **Whitespace Remover Tool** app. A progress bar shows while the tool scans the metadata.
 2. Choose the tab for a type of metadata. Each tab shows the number of objects of that type with whitespace issues.
@@ -103,7 +103,6 @@ If DHIS2 rejects a fix, the **Fix results** list the object with the reason, and
 ## Known limitations { #tool-whitespace-remover-limitations }
 
 - The tool only cleans the name, short name, code and description. It does not clean translations, form names, attribute values or other text.
-- The tool cannot find objects whose only issue is in the short name. If the tool finds an object through its name, code or description, it also cleans the short name.
 - The tool does not show visualizations, event visualizations or maps. In DHIS2 2.41 to 2.43, a change to one of these objects through the API can remove the data elements from its data items. Rename them in the **Data Visualizer**, **Line Listing** or **Maps** app instead.
 - When you fix a data set, an option set or a program, DHIS2 increases its version. The Android Capture app then downloads it again at the next synchronization.
 - DHIS2 can reject a change to some objects for a reason that is not about whitespace, for example a program with data that does not pass validation on 2.41. The **Fix results** show the reason.

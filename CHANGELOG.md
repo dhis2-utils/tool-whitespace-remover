@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Objects whose only whitespace issue is in the short name are now found. Before, their short name was only cleaned when the name, code or description also had an issue.
 - The conflict check now finds duplicates of values that contain a comma. On DHIS2 2.42 and later they were missed.
 - Options are checked for duplicate names and codes within their option set only, which is what DHIS2 requires. Before, an option with the same name in another option set was reported as a conflict.
 - When DHIS2 rejects a fix, the fix results show the reason instead of a generic message.

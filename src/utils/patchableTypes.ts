@@ -3,6 +3,7 @@ export interface Schema {
     metadata: boolean
     persisted: boolean
     relativeApiEndpoint?: string
+    properties?: { name: string; persisted: boolean }[]
 }
 
 // A JSON patch to an analytical object, even of an unrelated field, nulls
@@ -26,3 +27,16 @@ export const patchableTypes = (schemas: Schema[]): Set<string> =>
             .map((s) => s.plural)
             .filter((plural) => !UNSAFE_TYPES.has(plural))
     )
+
+// The patchable types that store a short name. /api/metadata rejects a
+// shortName filter unless the request is limited to such types.
+export const shortNameTypes = (schemas: Schema[]): string[] => {
+    const patchable = patchableTypes(schemas)
+    return schemas
+        .filter(
+            (s) =>
+                patchable.has(s.plural) &&
+                s.properties?.some((p) => p.name === 'shortName' && p.persisted)
+        )
+        .map((s) => s.plural)
+}

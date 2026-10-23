@@ -371,6 +371,13 @@ def test_description_only(run):
     run.record("description-only-issue-fixed", value == "only here", repr(value))
 
 
+def test_short_name_only(run):
+    uid = run.seed.id("short")
+    check_and_fix(run, DATA_ELEMENTS, uid)
+    value = server_value(run, "dataElements", uid, "shortName")
+    run.record("short-name-only-issue-fixed", value == f"{run.seed.prefix} short only", repr(value))
+
+
 def test_blank_codes(run):
     s = run.seed
     for key in ("ws1", "ws2"):
@@ -400,7 +407,8 @@ TESTS = [
     test_scan, test_highlight, test_xss, test_analytical_objects,
     test_fix_data_element, test_fix_org_unit, test_fix_indicator,
     test_conflicts, test_options_scope, test_bulk_peers,
-    test_failed_fix_reason, test_description_only, test_blank_codes,
+    test_failed_fix_reason, test_description_only, test_short_name_only,
+    test_blank_codes,
     test_bulk_fix,
 ]
 

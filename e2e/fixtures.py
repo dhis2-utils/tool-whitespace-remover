@@ -152,6 +152,7 @@ def _metadata(s, cc, root, itype):
             de("stale1", f"{p} stale Y ", f"{p} stale 1"),
             de("stale2", f" {p} stale Y", f"{p} stale 2"),
             de("desc", f"{p} description only", f"{p} desc", description="only  here"),
+            de("short", f"{p} short name only", f"{p} short  only "),
             de("ws1", f"{p} blank code one ", f"{p} blank 1", code="  "),
             de("ws2", f"{p} blank code two ", f"{p} blank 2", code="   "),
             de("xss", f'{p} <img src=x onerror="window.__e2eXss=1"> ', f"{p} xss"),
