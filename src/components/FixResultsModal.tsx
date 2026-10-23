@@ -14,9 +14,9 @@ import {
     TableHead,
 } from '@dhis2/ui'
 import React from 'react'
-import { FixError } from '@/types/metadata'
+import type { FixError } from '@/types/metadata'
 
-type Props = {
+interface Props {
     fixedCount: number
     errors: FixError[]
     onClose: () => void

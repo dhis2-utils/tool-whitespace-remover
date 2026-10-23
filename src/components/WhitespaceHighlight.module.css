@@ -6,3 +6,8 @@
     background: var(--colors-yellow300);
     outline: 1px solid var(--colors-yellow600);
 }
+
+.protected {
+    background: var(--colors-red200);
+    outline: 1px solid var(--colors-red600);
+}

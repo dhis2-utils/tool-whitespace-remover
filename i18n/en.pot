@@ -5,14 +5,17 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-08-17T11:38:57.645Z\n"
-"PO-Revision-Date: 2026-08-17T11:38:57.650Z\n"
+"POT-Creation-Date: 2026-10-23T07:04:09.702Z\n"
+"PO-Revision-Date: 2026-10-23T07:04:09.702Z\n"
 
 msgid "Conflict check failed"
 msgstr "Conflict check failed"
 
 msgid "No conflicts found"
 msgstr "No conflicts found"
+
+msgid "Conflict check failed for {{failed}} object(s)"
+msgstr "Conflict check failed for {{failed}} object(s)"
 
 msgid "Object fixed successfully"
 msgstr "Object fixed successfully"
@@ -96,6 +99,21 @@ msgstr "Fixing…"
 msgid "Error"
 msgstr "Error"
 
+msgid "Option codes are not changed"
+msgstr "Option codes are not changed"
+
+msgid "Program rule variable names are not changed"
+msgstr "Program rule variable names are not changed"
+
+msgid "Check"
+msgstr "Check"
+
+msgid "Fix"
+msgstr "Fix"
+
+msgid "Fix manually"
+msgstr "Fix manually"
+
 msgid "ID"
 msgstr "ID"
 
@@ -116,12 +134,6 @@ msgstr "Actions"
 
 msgid "Status"
 msgstr "Status"
-
-msgid "Check"
-msgstr "Check"
-
-msgid "Fix"
-msgstr "Fix"
 
 msgid "{{selected}} of {{total}} objects selected"
 msgstr "{{selected}} of {{total}} objects selected"
@@ -151,5 +163,5 @@ msgstr "Whitespace Remover Tool"
 msgctxt "Application description"
 msgid "__MANIFEST_APP_DESCRIPTION"
 msgstr ""
-"Tool for identifying and removing leading, trailing and double whitespace "
-"in metadata"
+"Finds and removes leading, trailing and double whitespace in metadata "
+"names, codes and descriptions"

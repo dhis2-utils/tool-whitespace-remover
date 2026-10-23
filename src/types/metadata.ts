@@ -9,6 +9,8 @@ export type CleanableField = (typeof CLEANABLE_FIELDS)[number]
 
 export type MetadataItem = {
     id: string
+    // only set on options; their names and codes are unique per option set
+    optionSet?: { id: string }
 } & Partial<Record<CleanableField, string>>
 
 /** Metadata type (e.g. "dataElements") -> objects with whitespace issues */
@@ -22,14 +24,14 @@ export type RowStatus =
     | 'fixing'
     | 'error'
 
-export type Conflict = {
+export interface Conflict {
     objectId: string
     objectName: string
     property: string
     conflictingObjectId: string
 }
 
-export type FixError = {
+export interface FixError {
     id: string
     name: string
     message: string

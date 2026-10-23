@@ -1,2 +1,5 @@
 pnpm-lock.yaml
 build/
+# Vendored by `ultracite init --install-skill`, pinned by hash in skills-lock.json
+.agents/
+skills-lock.json

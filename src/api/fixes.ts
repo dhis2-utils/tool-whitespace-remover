@@ -1,13 +1,34 @@
-import { FixError, MetadataItem } from '@/types/metadata'
-import { cleanString, fieldsNeedingCleaning } from '@/utils/whitespace'
+import type { FixError, MetadataItem } from '@/types/metadata'
+import { cleanValue, fieldsNeedingCleaning } from '@/utils/whitespace'
 
-type DataEngine = {
+interface DataEngine {
     mutate: (mutation: unknown) => Promise<unknown>
 }
 
-export type FixResult = {
+export interface FixResult {
     fixedIds: string[]
     errors: FixError[]
+}
+
+interface ErrorReports {
+    message?: string
+    response?: { errorReports?: Array<{ message: string }> }
+}
+
+/**
+ * The reason a fix failed. DHIS2 answers a rejected patch with a generic
+ * message; the actual reasons are in the import report's error reports.
+ */
+export const fixErrorMessage = (error: unknown): string => {
+    const details = (error as { details?: ErrorReports } | null)?.details
+    const reports = details?.response?.errorReports ?? []
+    if (reports.length > 0) {
+        return reports.map((report) => report.message).join('; ')
+    }
+    if (details?.message) {
+        return details.message
+    }
+    return error instanceof Error ? error.message : String(error)
 }
 
 /**
@@ -19,10 +40,10 @@ export const fixItem = async (
     type: string,
     item: MetadataItem
 ): Promise<void> => {
-    const operations = fieldsNeedingCleaning(item).map((field) => ({
+    const operations = fieldsNeedingCleaning(item, type).map((field) => ({
         op: 'add',
         path: `/${field}`,
-        value: cleanString(item[field] as string),
+        value: cleanValue(field, item[field] as string),
     }))
     await engine.mutate({
         resource: type,
@@ -48,8 +69,7 @@ export const fixItems = async (
                 errors.push({
                     id: item.id,
                     name: item.name ?? item.id,
-                    message:
-                        error instanceof Error ? error.message : String(error),
+                    message: fixErrorMessage(error),
                 })
             }
         })

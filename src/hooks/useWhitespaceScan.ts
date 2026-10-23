@@ -1,40 +1,42 @@
 import { useDataEngine } from '@dhis2/app-runtime'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { MetadataItem, MetadataMap } from '@/types/metadata'
+import type { MetadataItem, MetadataMap } from '@/types/metadata'
+import type { Schema } from '@/utils/patchableTypes'
+import { patchableTypes, shortNameTypes } from '@/utils/patchableTypes'
 import { hasWhitespaceIssue } from '@/utils/whitespace'
 
-const FIELDS = 'id,name,shortName,code,description'
+const FIELDS = 'id,name,shortName,code,description,optionSet[id]'
 
-// The API cannot filter on whitespace in shortName (token index limitation),
-// so shortName issues are only found on objects matched via other fields.
-const FILTERED_FIELDS = ['name', 'code', 'description']
+const NBSP = '\u00A0'
 
-// ilike '  '  -> repeated whitespace anywhere
-// $ilike ' '  -> leading whitespace
-// ilike$ ' '  -> trailing whitespace
-const buildFilters = (field: string): string[] => [
+// The server finds candidates; the app keeps the ones that cleaning would
+// change (hasWhitespaceIssue), so a filter may match more than it needs to.
+// ilike: contains, $ilike: starts with, ilike$: ends with.
+
+// Names, short names and codes: repeated, leading and trailing spaces, and
+// any newline, carriage return, tab or non-breaking space
+const lineFilters = (field: string): string[] => [
     `${field}:ilike:  `,
     `${field}:$ilike: `,
     `${field}:ilike$: `,
+    ...['\n', '\r', '\t', NBSP].map((char) => `${field}:ilike:${char}`),
 ]
 
-type Schema = {
-    plural: string
-    metadata: boolean
-    persisted: boolean
-    relativeApiEndpoint?: string
-}
-
-// Only persisted metadata types with their own API endpoint can be patched
-// via /api/<type>/<id>; anything else (read-only/embedded types) would fail
-// at fix time, so keep it out of the scan results.
-const patchableTypes = (schemas: Schema[]): Set<string> =>
-    new Set(
-        schemas
-            .filter((s) => s.metadata && s.persisted && s.relativeApiEndpoint)
-            .map((s) => s.plural)
-    )
+// Descriptions keep their line breaks: leading and trailing whitespace of
+// any kind, repeated spaces, spaces before a line break, tabs and
+// non-breaking spaces
+const textFilters = (field: string): string[] => [
+    `${field}:ilike:  `,
+    `${field}:ilike: \n`,
+    `${field}:ilike: \r`,
+    `${field}:ilike:\t`,
+    `${field}:ilike:${NBSP}`,
+    ...[' ', '\n', '\r'].flatMap((char) => [
+        `${field}:$ilike:${char}`,
+        `${field}:ilike$:${char}`,
+    ]),
+]
 
 const mergeResponses = (
     responses: Record<string, unknown>[],
@@ -46,7 +48,10 @@ const mergeResponses = (
             if (!allowedTypes.has(type) || !Array.isArray(value)) {
                 continue
             }
-            merged[type] = (merged[type] ?? []).concat(value as MetadataItem[])
+            merged[type] = [
+                ...(merged[type] ?? []),
+                ...(value as MetadataItem[]),
+            ]
         }
     }
     for (const type of Object.keys(merged)) {
@@ -72,9 +77,9 @@ const mergeResponses = (
 }
 
 /**
- * Scans all metadata for whitespace issues in name, code and description
- * (one /api/metadata call per field/pattern combination) and returns the
- * matching objects grouped by metadata type.
+ * Scans all metadata for whitespace issues in name, short name, code and
+ * description (one /api/metadata call per field/pattern combination) and
+ * returns the matching objects grouped by metadata type.
  */
 export const useWhitespaceScan = () => {
     const engine = useDataEngine()
@@ -83,8 +88,14 @@ export const useWhitespaceScan = () => {
     const query = useQuery<MetadataMap, Error>(
         ['whitespace-scan'],
         async () => {
-            const filters = FILTERED_FIELDS.flatMap(buildFilters)
-            const totalRequests = filters.length + 1 // + schemas
+            // across all metadata types at once
+            const filters = [
+                ...lineFilters('name'),
+                ...lineFilters('code'),
+                ...textFilters('description'),
+            ]
+            const shortNameFilters = lineFilters('shortName')
+            const totalRequests = filters.length + shortNameFilters.length + 1 // + schemas
             let completed = 0
             setProgress(0)
             const tick = () => {
@@ -97,7 +108,7 @@ export const useWhitespaceScan = () => {
                     schemas: {
                         resource: 'schemas',
                         params: {
-                            fields: 'plural,metadata,persisted,relativeApiEndpoint',
+                            fields: 'plural,metadata,persisted,relativeApiEndpoint,properties[name,persisted]',
                         },
                     },
                 })
@@ -108,20 +119,41 @@ export const useWhitespaceScan = () => {
                     ).schemas
                 })
 
-            const responses = await Promise.all(
-                filters.map(async (filter) => {
-                    const response = await engine.query({
-                        metadata: {
-                            resource: 'metadata',
-                            params: { filter, fields: FIELDS },
-                        },
-                    })
-                    tick()
-                    return response.metadata as Record<string, unknown>
+            const scan = async (
+                filter: string,
+                types: Record<string, boolean> = {}
+            ) => {
+                const response = await engine.query({
+                    metadata: {
+                        resource: 'metadata',
+                        params: { filter, fields: FIELDS, ...types },
+                    },
                 })
+                tick()
+                return response.metadata as Record<string, unknown>
+            }
+
+            // A shortName filter is only accepted when the request is
+            // limited to the types that have one (dataElements=true&...),
+            // so those requests wait for the schemas
+            const shortNameResponses = schemasPromise.then((schemas) => {
+                const types = Object.fromEntries(
+                    shortNameTypes(schemas).map((type) => [type, true])
+                )
+                return Object.keys(types).length > 0
+                    ? Promise.all(
+                          shortNameFilters.map((filter) => scan(filter, types))
+                      )
+                    : []
+            })
+            const responses = await Promise.all(
+                filters.map((filter) => scan(filter))
             )
             const schemas = await schemasPromise
-            return mergeResponses(responses, patchableTypes(schemas))
+            return mergeResponses(
+                [...responses, ...(await shortNameResponses)],
+                patchableTypes(schemas)
+            )
         },
         {
             staleTime: Infinity,

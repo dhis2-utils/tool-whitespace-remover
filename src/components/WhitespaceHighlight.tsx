@@ -1,33 +1,56 @@
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 import styles from './WhitespaceHighlight.module.css'
+import type { CleanableField } from '@/types/metadata'
+import { problemRun } from '@/utils/whitespace'
 
 const WHITESPACE_RUN = /\s+/g
 
-// A whitespace run is problematic if it is leading, trailing, or repeated
-const isProblemRun = (value: string, index: number, run: string): boolean =>
-    index === 0 || index + run.length === value.length || run.length >= 2
+// Whitespace that is invisible on its own gets a symbol inside a highlight;
+// a newline keeps its line break after the symbol. Other Unicode spaces
+// show as a middle dot.
+const SYMBOLS: Record<string, string> = {
+    ' ': ' ',
+    '\n': '↵\n',
+    '\r': '␍',
+    '\t': '⇥',
+    '\u00A0': '⍽',
+}
+
+const showWhitespace = (run: string): string =>
+    [...run].map((char) => SYMBOLS[char] ?? '·').join('')
 
 /**
- * Renders a metadata value in quotes, with the problematic whitespace
- * (leading, trailing, repeated) highlighted.
+ * Renders a metadata value in quotes, with the whitespace that cleaning
+ * removes highlighted: yellow where the tool removes it, red in a field the
+ * tool never changes.
  */
-export const WhitespaceHighlight = ({ value }: { value?: string }) => {
+export const WhitespaceHighlight = ({
+    field,
+    value,
+    isProtected = false,
+}: {
+    field: CleanableField
+    value?: string
+    isProtected?: boolean
+}) => {
     if (value === undefined || value === '') {
         return null
     }
+    const markClass = isProtected ? styles.protected : styles.whitespace
     const segments: ReactNode[] = []
     let last = 0
     for (const match of value.matchAll(WHITESPACE_RUN)) {
-        const index = match.index ?? 0
-        if (!isProblemRun(value, index, match[0])) {
+        if (!problemRun(field, value, match)) {
             continue
         }
+        const index = match.index ?? 0
         if (index > last) {
             segments.push(value.slice(last, index))
         }
         segments.push(
-            <mark key={index} className={styles.whitespace}>
-                {match[0]}
+            <mark key={index} className={markClass}>
+                {showWhitespace(match[0])}
             </mark>
         )
         last = index + match[0].length

@@ -9,7 +9,7 @@ import { MetadataTable } from './MetadataTable'
 import { findConflicts } from '@/api/conflicts'
 import { fixItems } from '@/api/fixes'
 import { useWhitespaceScan } from '@/hooks/useWhitespaceScan'
-import {
+import type {
     Conflict,
     FixError,
     MetadataItem,
@@ -25,12 +25,15 @@ const typeLabel = (type: string): string => {
     return spaced.charAt(0).toUpperCase() + spaced.slice(1)
 }
 
-type ConflictModalState = {
+interface ConflictModalState {
     conflicts: Conflict[]
     checkedCount: number
     errorCount: number
 }
-type ResultsModalState = { fixedCount: number; errors: FixError[] }
+interface ResultsModalState {
+    fixedCount: number
+    errors: FixError[]
+}
 
 export const CleanerPage = () => {
     const engine = useDataEngine()
@@ -114,6 +117,27 @@ export const CleanerPage = () => {
         })
     }
 
+    // Check one item and set its status; returns its conflicts, or null if
+    // the check failed
+    const checkItem = async (
+        type: string,
+        item: MetadataItem,
+        peers: MetadataItem[]
+    ): Promise<Conflict[] | null> => {
+        try {
+            const conflicts = await findConflicts({ engine, type, item, peers })
+            const hasConflicts = conflicts.length > 0
+            setStatus([item.id], hasConflicts ? 'conflict' : 'ready')
+            setSelection([item.id], !hasConflicts)
+            return conflicts
+        } catch (checkError) {
+            setStatus([item.id], 'error')
+            setSelection([item.id], false)
+            console.error('Conflict check failed for', item.id, checkError)
+            return null
+        }
+    }
+
     // Check a batch of items for conflicts; peers are compared against each
     // other as well as against the server. Returns all conflicts found.
     const checkItems = async (
@@ -128,35 +152,17 @@ export const CleanerPage = () => {
             'checking'
         )
         for (const batch of chunk(itemsToCheck, BATCH_SIZE)) {
-            await Promise.all(
-                batch.map(async (item) => {
-                    try {
-                        const conflicts = await findConflicts({
-                            engine,
-                            type,
-                            item,
-                            peers,
-                        })
-                        if (conflicts.length > 0) {
-                            allConflicts.push(...conflicts)
-                            setStatus([item.id], 'conflict')
-                            setSelection([item.id], false)
-                        } else {
-                            setStatus([item.id], 'ready')
-                            setSelection([item.id], true)
-                        }
-                    } catch (checkError) {
-                        errorCount += 1
-                        setStatus([item.id], 'error')
-                        setSelection([item.id], false)
-                        console.error(
-                            'Conflict check failed for',
-                            item.id,
-                            checkError
-                        )
-                    }
-                })
+            // oxlint-disable-next-line no-await-in-loop -- one batch at a time caps the requests in flight at BATCH_SIZE
+            const outcomes = await Promise.all(
+                batch.map((item) => checkItem(type, item, peers))
             )
+            for (const conflicts of outcomes) {
+                if (conflicts === null) {
+                    errorCount += 1
+                } else {
+                    allConflicts.push(...conflicts)
+                }
+            }
         }
         return { conflicts: allConflicts, errorCount }
     }
@@ -199,8 +205,8 @@ export const CleanerPage = () => {
             if (errorCount > 0) {
                 showError({
                     message: i18n.t(
-                        'Conflict check failed for {{count}} object(s)',
-                        { count: errorCount }
+                        'Conflict check failed for {{failed}} object(s)',
+                        { failed: errorCount }
                     ),
                 })
             }
@@ -219,6 +225,7 @@ export const CleanerPage = () => {
             const fixedIds: string[] = []
             const errors: FixError[] = []
             for (const batch of chunk(toFix, BATCH_SIZE)) {
+                // oxlint-disable-next-line no-await-in-loop -- one batch at a time caps the requests in flight at BATCH_SIZE
                 const result = await fixItems(engine, type, batch)
                 fixedIds.push(...result.fixedIds)
                 errors.push(...result.errors)
@@ -310,6 +317,7 @@ export const CleanerPage = () => {
                 <MetadataTable
                     key={activeType}
                     items={activeItems}
+                    type={activeType}
                     statuses={statuses}
                     selected={selected}
                     busy={busy}

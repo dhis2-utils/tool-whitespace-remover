@@ -2,7 +2,7 @@
 
 Functional testing of the migrated app (branch `app-platform-migration`,
 production build `whitespace-cleaner-1.0.0.zip` installed via
-`POST /api/apps`) against disposable d2-broker instances. Automated with
+`POST /api/apps`) against disposable test instances. Automated with
 Playwright (Chromium, headless); authentication via `POST /api/auth/login`
 session cookie.
 

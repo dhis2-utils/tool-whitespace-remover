@@ -1,7 +1,7 @@
-import { Conflict, MetadataItem } from '@/types/metadata'
-import { cleanString } from '@/utils/whitespace'
+import type { Conflict, MetadataItem } from '@/types/metadata'
+import { cleanLine } from '@/utils/whitespace'
 
-type DataEngine = {
+interface DataEngine {
     query: (query: Record<string, unknown>) => Promise<Record<string, unknown>>
 }
 
@@ -12,11 +12,26 @@ const PROPERTY_LABELS: Record<string, string> = {
 }
 
 // Names and short names must be unique per type, except for organisation
-// units. Codes must always be unique.
+// units. Codes must always be unique. Options have no short name, their
+// name only needs to be unique within their option set, and their code is
+// never changed (see cleanableFields).
 const uniqueFieldsForType = (
     type: string
-): Array<'name' | 'shortName' | 'code'> =>
-    type === 'organisationUnits' ? ['code'] : ['name', 'shortName', 'code']
+): Array<'name' | 'shortName' | 'code'> => {
+    if (type === 'organisationUnits') {
+        return ['code']
+    }
+    return type === 'options' ? ['name'] : ['name', 'shortName', 'code']
+}
+
+// Options are only compared with options in the same option set
+const scopeFilters = (type: string, item: MetadataItem): string[] =>
+    type === 'options' && item.optionSet
+        ? [`optionSet.id:eq:${item.optionSet.id}`]
+        : []
+
+const inSameScope = (type: string, a: MetadataItem, b: MetadataItem) =>
+    type !== 'options' || a.optionSet?.id === b.optionSet?.id
 
 const cleanedValue = (
     item: MetadataItem,
@@ -26,9 +41,30 @@ const cleanedValue = (
     if (typeof value !== 'string') {
         return undefined
     }
-    const cleaned = cleanString(value)
+    const cleaned = cleanLine(value)
     // Whitespace-only values clean to '' - nothing to conflict with
     return cleaned === '' ? undefined : cleaned
+}
+
+/**
+ * The filter that finds candidate duplicates of `value`. An eq filter is
+ * exact: the server rejoins everything after the second ':' as the value,
+ * so colons and brackets are safe. From 2.42 a comma in an eq value makes
+ * it match nothing, so for those values search on the longest comma-free
+ * part instead; callers compare the candidates exactly.
+ */
+export const conflictFilter = (field: string, value: string): string => {
+    let longest = ''
+    for (const part of value.split(',')) {
+        if (part.trim().length > longest.length) {
+            longest = part.trim()
+        }
+    }
+    // An empty filter value is a server error, so a value of only commas
+    // keeps the eq filter
+    return value.includes(',') && longest !== ''
+        ? `${field}:ilike:${longest}`
+        : `${field}:eq:${value}`
 }
 
 /**
@@ -49,7 +85,7 @@ export const findConflicts = async ({
     peers?: MetadataItem[]
 }): Promise<Conflict[]> => {
     const conflicts: Conflict[] = []
-    const objectName = item.name ? cleanString(item.name) : item.id
+    const objectName = item.name ? cleanLine(item.name) : item.id
     const fields = uniqueFieldsForType(type)
 
     await Promise.all(
@@ -58,22 +94,23 @@ export const findConflicts = async ({
             if (value === undefined) {
                 return
             }
-            // Only single-value operators (eq/!eq) are used here: the server
-            // rejoins everything after the second ':' as the value, so
-            // colons, commas and brackets in metadata values are safe.
-            // Multi-value operators (in:[...]) would not be.
             const response = await engine.query({
                 objects: {
                     resource: type,
                     params: {
-                        filter: [`${field}:eq:${value}`, `id:!eq:${item.id}`],
-                        fields: 'id',
-                        pageSize: 50,
+                        filter: [
+                            conflictFilter(field, value),
+                            `id:!eq:${item.id}`,
+                            ...scopeFilters(type, item),
+                        ],
+                        fields: `id,${field}`,
+                        paging: false,
                     },
                 },
             })
             const objects = response.objects as Record<string, unknown>
-            const matches = (objects?.[type] as Array<{ id: string }>) ?? []
+            const candidates = (objects?.[type] as Array<MetadataItem>) ?? []
+            const matches = candidates.filter((c) => c[field] === value)
             for (const match of matches) {
                 conflicts.push({
                     objectId: item.id,
@@ -86,7 +123,7 @@ export const findConflicts = async ({
     )
 
     for (const peer of peers) {
-        if (peer.id === item.id) {
+        if (peer.id === item.id || !inSameScope(type, item, peer)) {
             continue
         }
         for (const field of fields) {
