@@ -15,6 +15,8 @@ const UNSAFE_TYPES = new Set([
     'maps',
     'eventReports',
     'eventCharts',
+    // Part of a map; PATCH /api/mapViews/<id> answers 405.
+    'mapViews',
     // DHIS2 generates their names from the category options.
     'categoryOptionCombos',
 ])

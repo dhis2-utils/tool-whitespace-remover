@@ -2,74 +2,116 @@ import {
     cleanableFields,
     isFixable,
     protectedFields,
-    cleanString,
+    cleanValue,
     fieldsNeedingCleaning,
     hasWhitespaceIssue,
     needsCleaning,
+    problemRun,
 } from './whitespace'
 
 const DE = 'dataElements'
 
-describe('needsCleaning', () => {
+const NBSP = '\u00A0'
+
+describe('needsCleaning in names, short names and codes', () => {
     it.each([
         ' leading',
         'trailing ',
         '  both  ',
         'double  interior',
-        'tab\t\ttab',
-        'line\n\nbreak',
+        'tab\ttab',
+        'line\nbreak',
+        'Bladder Cancer\r',
+        `non${NBSP}breaking`,
         ' ',
         '\t',
     ])('flags %j', (value) => {
-        expect(needsCleaning(value)).toBe(true)
+        expect(needsCleaning('name', value)).toBe(true)
     })
 
     it.each(['clean', 'single interior space', 'a b c', ''])(
         'accepts %j',
         (value) => {
-            expect(needsCleaning(value)).toBe(false)
+            expect(needsCleaning('code', value)).toBe(false)
         }
     )
-
-    it('accepts a single interior tab (only repeated whitespace is flagged)', () => {
-        expect(needsCleaning('a\tb')).toBe(false)
-    })
 
     it.each([undefined, null, 42, {}, ['  ']])(
         'is false for non-string %p',
         (value) => {
-            expect(needsCleaning(value)).toBe(false)
+            expect(needsCleaning('name', value)).toBe(false)
         }
     )
 })
 
-describe('cleanString', () => {
+describe('needsCleaning in descriptions', () => {
+    it.each([
+        'Para one.\n\nPara two.',
+        'Value "1" = include\nValue "0" = exclude',
+        'Steps:\n- first\n- second',
+        'Windows\r\nline endings',
+        'Intro:\n  indented line',
+        'a single\ttab',
+    ])('keeps the line breaks and layout of %j', (value) => {
+        expect(needsCleaning('description', value)).toBe(false)
+    })
+
+    it.each([
+        ' leading',
+        'trailing\n',
+        'label. \nA vaccine',
+        'double  space',
+        'tabs\t\there',
+        '\r\nstarts with a line break',
+    ])('flags %j', (value) => {
+        expect(needsCleaning('description', value)).toBe(true)
+    })
+})
+
+describe('cleanValue', () => {
     it.each([
         [' leading', 'leading'],
         ['trailing ', 'trailing'],
-        ['  both  ', 'both'],
         ['double  interior', 'double interior'],
         ['a \t b', 'a b'],
-        ['tab\t\ttab', 'tab tab'],
-        ['line\n\nbreak', 'line break'],
+        ['Bladder Cancer\r', 'Bladder Cancer'],
+        ['line\r\nbreak', 'line break'],
+        [`non${NBSP}breaking`, 'non breaking'],
         [' ', ''],
-        ['a b', 'a b'],
         ['', ''],
-    ])('cleans %j to %j', (input, expected) => {
-        expect(cleanString(input)).toBe(expected)
+    ])('cleans the name %j to %j', (input, expected) => {
+        expect(cleanValue('name', input)).toBe(expected)
+    })
+
+    it.each([
+        ['label. \nA vaccine', 'label.\nA vaccine'],
+        ['Para one.  \n\nPara two. ', 'Para one.\n\nPara two.'],
+        ['a  b\nc', 'a b\nc'],
+        ['\n\ntext\n', 'text'],
+        ['Intro:\n  indented line', 'Intro:\n  indented line'],
+        ['Windows \r\nline', 'Windows\r\nline'],
+    ])('cleans the description %j to %j', (input, expected) => {
+        expect(cleanValue('description', input)).toBe(expected)
     })
 
     it('produces values that no longer need cleaning', () => {
-        const samples = [' a ', 'a  b', '\t\tx\t\t', '  ', 'a \n b  c ']
-        for (const value of samples) {
-            expect(needsCleaning(cleanString(value))).toBe(false)
+        const samples = [' a ', 'a  b', '\t\tx\t\t', '  ', 'a \n b  c ', 'x\r']
+        for (const field of ['name', 'description'] as const) {
+            for (const value of samples) {
+                expect(needsCleaning(field, cleanValue(field, value))).toBe(
+                    false
+                )
+            }
         }
     })
 
     it('is idempotent', () => {
-        const samples = [' a ', 'a  b', 'clean', 'a\tb', '  x  y  ']
-        for (const value of samples) {
-            expect(cleanString(cleanString(value))).toBe(cleanString(value))
+        const samples = [' a ', 'a  b', 'clean', 'a\tb', '  x  y  ', 'p.\n\nq ']
+        for (const field of ['code', 'description'] as const) {
+            for (const value of samples) {
+                const once = cleanValue(field, value)
+                expect(cleanValue(field, once)).toBe(once)
+            }
         }
     })
 })
@@ -175,5 +217,24 @@ describe('hasWhitespaceIssue', () => {
         expect(hasWhitespaceIssue({ id: 'abc12345678', name: 'a b' })).toBe(
             false
         )
+    })
+})
+
+describe('problemRun', () => {
+    const runs = (value: string, field: 'name' | 'description') =>
+        [...value.matchAll(/\s+/g)]
+            .filter((m) => problemRun(field, value, m))
+            .map((m) => m[0])
+
+    it('marks every whitespace run in a name except single spaces', () => {
+        expect(runs(' a b\tc  d\r', 'name')).toEqual([' ', '\t', '  ', '\r'])
+    })
+
+    it('leaves intended line breaks in a description unmarked', () => {
+        expect(runs('a b\n\nc  d \ne\n', 'description')).toEqual([
+            '  ',
+            ' \n',
+            '\n',
+        ])
     })
 })

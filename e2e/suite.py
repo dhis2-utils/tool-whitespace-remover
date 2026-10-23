@@ -433,6 +433,27 @@ def test_short_name_only(run):
     run.record("short-name-only-issue-fixed", value == f"{run.seed.prefix} short only", repr(value))
 
 
+def test_control_characters(run):
+    s = run.seed
+    uid = s.id("control")
+    open_tab(run, DATA_ELEMENTS)
+    marks = row(run, uid).locator("mark").all_inner_texts()
+    shown = any("␍" in m for m in marks) and any("⇥" in m for m in marks)
+    check_and_fix(run, DATA_ELEMENTS, uid)
+    got = [server_value(run, "dataElements", uid, f) for f in ("name", "shortName", "code")]
+    expected = [f"{s.prefix} carriage return", f"{s.prefix} nbsp", f"{s.code}_TAB X"]
+    run.record("line-breaks-tabs-and-nbsp-cleaned", shown and got == expected,
+               f"symbols shown={shown} marks={marks} values={got!r}")
+
+
+def test_description_layout(run):
+    uid = run.seed.id("para")
+    check_and_fix(run, DATA_ELEMENTS, uid)
+    value = server_value(run, "dataElements", uid, "description")
+    run.record("description-line-breaks-kept",
+               value == "Line one.\nLine two.\n\n- an item", repr(value))
+
+
 def test_blank_codes(run):
     s = run.seed
     for key in ("ws1", "ws2"):
@@ -465,6 +486,7 @@ TESTS = [
     test_rule_variable_names_untouched,
     test_bulk_peers,
     test_failed_fix_reason, test_description_only, test_short_name_only,
+    test_control_characters, test_description_layout,
     test_blank_codes,
     test_bulk_fix,
 ]

@@ -8,16 +8,34 @@ import { hasWhitespaceIssue } from '@/utils/whitespace'
 
 const FIELDS = 'id,name,shortName,code,description,optionSet[id]'
 
-// Filtered across all metadata types at once
-const FILTERED_FIELDS = ['name', 'code', 'description']
+const NBSP = '\u00A0'
 
-// ilike '  '  -> repeated whitespace anywhere
-// $ilike ' '  -> leading whitespace
-// ilike$ ' '  -> trailing whitespace
-const buildFilters = (field: string): string[] => [
+// The server finds candidates; the app keeps the ones that cleaning would
+// change (hasWhitespaceIssue), so a filter may match more than it needs to.
+// ilike: contains, $ilike: starts with, ilike$: ends with.
+
+// Names, short names and codes: repeated, leading and trailing spaces, and
+// any newline, carriage return, tab or non-breaking space
+const lineFilters = (field: string): string[] => [
     `${field}:ilike:  `,
     `${field}:$ilike: `,
     `${field}:ilike$: `,
+    ...['\n', '\r', '\t', NBSP].map((char) => `${field}:ilike:${char}`),
+]
+
+// Descriptions keep their line breaks: leading and trailing whitespace of
+// any kind, repeated spaces, spaces before a line break, tabs and
+// non-breaking spaces
+const textFilters = (field: string): string[] => [
+    `${field}:ilike:  `,
+    `${field}:ilike: \n`,
+    `${field}:ilike: \r`,
+    `${field}:ilike:\t`,
+    `${field}:ilike:${NBSP}`,
+    ...[' ', '\n', '\r'].flatMap((char) => [
+        `${field}:$ilike:${char}`,
+        `${field}:ilike$:${char}`,
+    ]),
 ]
 
 const mergeResponses = (
@@ -70,8 +88,13 @@ export const useWhitespaceScan = () => {
     const query = useQuery<MetadataMap, Error>(
         ['whitespace-scan'],
         async () => {
-            const filters = FILTERED_FIELDS.flatMap(buildFilters)
-            const shortNameFilters = buildFilters('shortName')
+            // across all metadata types at once
+            const filters = [
+                ...lineFilters('name'),
+                ...lineFilters('code'),
+                ...textFilters('description'),
+            ]
+            const shortNameFilters = lineFilters('shortName')
             const totalRequests = filters.length + shortNameFilters.length + 1 // + schemas
             let completed = 0
             setProgress(0)

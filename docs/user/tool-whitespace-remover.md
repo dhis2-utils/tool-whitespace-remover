@@ -2,9 +2,14 @@
 
 ## About the tool { #tool-whitespace-remover-about }
 
-The Whitespace Remover Tool finds metadata with extra whitespace in its name, short name, code or description, and removes it. Extra whitespace is a space or tab at the start or end of a value, or two or more in a row. The tool is for system administrators and implementers who maintain DHIS2 metadata.
+The Whitespace Remover Tool finds metadata with extra whitespace in its name, short name, code or description, and removes it. The tool is for system administrators and implementers who maintain DHIS2 metadata.
 
 Extra whitespace is hard to see. It makes two objects look the same in lists and reports, and it stops searches and imports from matching a value.
+
+The tool treats these as extra whitespace:
+
+- In names, short names and codes: whitespace at the start or end, two or more spaces in a row, and any line break, tab or non-breaking space. These often come in when a value is pasted from a spreadsheet or a document. The tool replaces each of them with a single space.
+- In descriptions: whitespace at the start or end, spaces at the end of a line, and two or more spaces or tabs in a row between words. The tool keeps the line breaks, blank lines and indentation of a description, so paragraphs and lists stay as they are.
 
 ## Before you start { #tool-whitespace-remover-before-you-start }
 
@@ -68,6 +73,8 @@ The table shows each value in quotation marks, with the extra whitespace highlig
 
 - Yellow: whitespace that the tool can remove.
 - Red: whitespace in a value that the tool never changes, because other data refers to that exact value. The tool shows a notice above the table that says why. An object with only red highlights has no **Check** or **Fix** button, and its status is **Fix manually**.
+
+Whitespace that you cannot see gets a symbol inside the highlight: ↵ for a line break, ␍ for a carriage return, ⇥ for a tab, and ⍽ for a non-breaking space.
 
 The table shows 50 objects per page. To change this, choose a number in **Items per page** under the table.
 
@@ -136,7 +143,7 @@ If DHIS2 rejects a fix, the **Fix results** list the object with the reason, and
 - The tool only cleans the name, short name, code and description. It does not clean translations, form names, attribute values or other text.
 - The tool does not change option codes or program rule variable names. It shows their whitespace in red. The section on fixing whitespace issues explains why.
 - The tool does not show category option combinations. DHIS2 generates their names from the names of the category options.
-- The tool does not show visualizations, event visualizations or maps. In DHIS2 2.41 to 2.43, a change to one of these objects through the API can remove the data elements from its data items. Rename them in the **Data Visualizer**, **Line Listing** or **Maps** app instead.
+- The tool does not show visualizations, event visualizations, maps or map layers. In DHIS2 2.41 to 2.43, a change to a visualization or a map through the API can remove the data elements from its data items, and map layers cannot be changed through the API at all. Rename them in the **Data Visualizer**, **Line Listing** or **Maps** app instead.
 - When you fix a data set, an option set or a program, DHIS2 increases its version. The Android Capture app then downloads it again at the next synchronization.
 - DHIS2 can reject a change to some objects for a reason that is not about whitespace, for example a program with data that does not pass validation on 2.41. The **Fix results** show the reason.
 - The tool compares values exactly, with the same capital letters. Two values that differ only in capital letters are not a conflict.

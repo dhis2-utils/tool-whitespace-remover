@@ -160,6 +160,11 @@ def _metadata(s, cc, root, itype):
             de("stale2", f" {p} stale Y", f"{p} stale 2"),
             de("desc", f"{p} description only", f"{p} desc", description="only  here"),
             de("short", f"{p} short name only", f"{p} short  only "),
+            # line breaks, tabs and non-breaking spaces in single-line fields
+            de("control", f"{p} carriage return\r", f"{p}\u00A0nbsp", code=f"{c}_TAB\tX"),
+            # descriptions keep their line breaks; only the space before one goes
+            de("para", f"{p} paragraphs", f"{p} paragraphs",
+               description="Line one. \nLine two.\n\n- an item"),
             de("ws1", f"{p} blank code one ", f"{p} blank 1", code="  "),
             de("ws2", f"{p} blank code two ", f"{p} blank 2", code="   "),
             de("xss", f'{p} <img src=x onerror="window.__e2eXss=1"> ', f"{p} xss"),

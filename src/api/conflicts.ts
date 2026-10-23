@@ -1,5 +1,5 @@
 import type { Conflict, MetadataItem } from '@/types/metadata'
-import { cleanString } from '@/utils/whitespace'
+import { cleanLine } from '@/utils/whitespace'
 
 interface DataEngine {
     query: (query: Record<string, unknown>) => Promise<Record<string, unknown>>
@@ -41,7 +41,7 @@ const cleanedValue = (
     if (typeof value !== 'string') {
         return undefined
     }
-    const cleaned = cleanString(value)
+    const cleaned = cleanLine(value)
     // Whitespace-only values clean to '' - nothing to conflict with
     return cleaned === '' ? undefined : cleaned
 }
@@ -85,7 +85,7 @@ export const findConflicts = async ({
     peers?: MetadataItem[]
 }): Promise<Conflict[]> => {
     const conflicts: Conflict[] = []
-    const objectName = item.name ? cleanString(item.name) : item.id
+    const objectName = item.name ? cleanLine(item.name) : item.id
     const fields = uniqueFieldsForType(type)
 
     await Promise.all(

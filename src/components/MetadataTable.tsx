@@ -103,6 +103,7 @@ const MetadataRow = ({
             {FIELDS.map((field) => (
                 <DataTableCell key={field}>
                     <WhitespaceHighlight
+                        field={field}
                         value={item[field]}
                         isProtected={isProtected.includes(field)}
                     />

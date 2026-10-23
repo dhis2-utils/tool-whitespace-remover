@@ -36,6 +36,10 @@ describe('patchableTypes', () => {
         expect(patchableTypes([schema(plural)]).has(plural)).toBe(false)
     })
 
+    it('never offers map views, which the API cannot patch', () => {
+        expect(patchableTypes([schema('mapViews')]).has('mapViews')).toBe(false)
+    })
+
     it('never offers category option combos, whose names DHIS2 generates', () => {
         expect(
             patchableTypes([schema('categoryOptionCombos')]).has(

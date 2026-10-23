@@ -1,5 +1,5 @@
 import type { FixError, MetadataItem } from '@/types/metadata'
-import { cleanString, fieldsNeedingCleaning } from '@/utils/whitespace'
+import { cleanValue, fieldsNeedingCleaning } from '@/utils/whitespace'
 
 interface DataEngine {
     mutate: (mutation: unknown) => Promise<unknown>
@@ -11,6 +11,7 @@ export interface FixResult {
 }
 
 interface ErrorReports {
+    message?: string
     response?: { errorReports?: Array<{ message: string }> }
 }
 
@@ -23,6 +24,9 @@ export const fixErrorMessage = (error: unknown): string => {
     const reports = details?.response?.errorReports ?? []
     if (reports.length > 0) {
         return reports.map((report) => report.message).join('; ')
+    }
+    if (details?.message) {
+        return details.message
     }
     return error instanceof Error ? error.message : String(error)
 }
@@ -39,7 +43,7 @@ export const fixItem = async (
     const operations = fieldsNeedingCleaning(item, type).map((field) => ({
         op: 'add',
         path: `/${field}`,
-        value: cleanString(item[field] as string),
+        value: cleanValue(field, item[field] as string),
     }))
     await engine.mutate({
         resource: type,

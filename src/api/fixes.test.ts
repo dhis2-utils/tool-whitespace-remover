@@ -21,6 +21,14 @@ describe('fixErrorMessage', () => {
         )
     })
 
+    it('uses the server message when there are no error reports', () => {
+        const error = Object.assign(
+            new Error('An unknown error occurred - (400)'),
+            { details: { message: 'Invalid definition for property' } }
+        )
+        expect(fixErrorMessage(error)).toBe('Invalid definition for property')
+    })
+
     it('falls back to the error message without error reports', () => {
         expect(fixErrorMessage(fetchError({ response: {} }))).toBe(
             'One or more errors occurred'
