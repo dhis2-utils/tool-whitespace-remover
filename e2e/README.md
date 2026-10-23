@@ -30,9 +30,9 @@ The suite writes `results.json`, and a screenshot for each failed test, to `RESU
 
 1. Installs `APP_ZIP`.
 2. Deletes anything that an earlier, interrupted run left behind. Every run records the objects it creates in the dataStore at `e2e-state/tool-whitespace-remover` before it creates them.
-3. Seeds about 40 objects with run-unique names that start with `E2E WSR`: data elements, an organisation unit, an indicator, options, constants and a visualization.
+3. Seeds about 55 objects with run-unique names that start with `E2E WSR`: data elements, organisation units, an indicator, option sets and options, constants, a visualization, and an event program with a program rule variable and a program rule.
 4. Runs the tests, then deletes everything it created and uninstalls the app, whether the tests passed or not.
 
-The tests cover the scan, highlighting, cleaning with no change to other fields (attribute values, translations, group membership, geometry, expressions), conflicts (including values with commas, options in different option sets, and duplicates within a selection), the error shown when DHIS2 rejects a fix, whitespace-only codes, bulk fixes across batches, HTML in names, and that visualizations are never offered for fixing.
+The tests cover the scan, highlighting, cleaning with no change to other fields (attribute values, translations, group membership, geometry, expressions), line breaks, tabs and non-breaking spaces in names and codes, line breaks kept in descriptions, issues only in the short name, conflicts (including values with commas, options in different option sets, and duplicates within a selection), the error shown when DHIS2 rejects a fix, whitespace-only codes, bulk fixes across batches, HTML in names, option set order, and the values the tool must never change: option codes and program rule variable names (with the program rule that uses the variable still valid). It also checks that visualizations and category option combinations are never offered.
 
-On the Sierra Leone demo database a run takes about two minutes.
+A run takes about two minutes on the Sierra Leone demo database, and about six on the Laos demo, where deleting the seeded data elements is slow.
